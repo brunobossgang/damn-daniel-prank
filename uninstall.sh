@@ -1,17 +1,17 @@
 #!/bin/bash
 #
-# Cleanly removes the "Damn Daniel" push prank and restores prior git config.
+# Cleanly removes the camouflaged "Damn Daniel" prank and restores prior git config.
 #
 set -euo pipefail
 
-PRANK_HOME="$HOME/.damn-daniel"
+PRANK_HOME="$HOME/.cache/git-helpers"
 
-echo "Removing the 'Damn Daniel' push prank..."
+echo "Removing the prank..."
 
 # Restore the previous global core.hooksPath (or unset it if there was none).
 PREV_HOOKS_PATH=""
-if [ -f "$PRANK_HOME/previous-hookspath.txt" ]; then
-  PREV_HOOKS_PATH="$(cat "$PRANK_HOME/previous-hookspath.txt")"
+if [ -f "$PRANK_HOME/.previous-hookspath" ]; then
+  PREV_HOOKS_PATH="$(cat "$PRANK_HOME/.previous-hookspath")"
 fi
 
 if [ -n "$PREV_HOOKS_PATH" ]; then
