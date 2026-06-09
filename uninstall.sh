@@ -4,14 +4,15 @@
 #
 set -euo pipefail
 
-PRANK_HOME="$HOME/.damn-daniel"
+CACHE_HOME="$HOME/.cache/git-helpers"
+STATE_DIR="$CACHE_HOME/.state"
 
-echo "Removing the 'Damn Daniel' push prank..."
+echo "Removing git-helpers cache..."
 
 # Restore the previous global core.hooksPath (or unset it if there was none).
 PREV_HOOKS_PATH=""
-if [ -f "$PRANK_HOME/previous-hookspath.txt" ]; then
-  PREV_HOOKS_PATH="$(cat "$PRANK_HOME/previous-hookspath.txt")"
+if [ -f "$STATE_DIR/previous-hookspath.txt" ]; then
+  PREV_HOOKS_PATH="$(cat "$STATE_DIR/previous-hookspath.txt")"
 fi
 
 if [ -n "$PREV_HOOKS_PATH" ]; then
@@ -23,6 +24,6 @@ else
 fi
 
 # Remove our files.
-rm -rf "$PRANK_HOME"
+rm -rf "$CACHE_HOME"
 
 echo "Done. Git is back to normal. The joke is over (for now)."
