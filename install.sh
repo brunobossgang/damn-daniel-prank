@@ -115,16 +115,3 @@ HOOK
 chmod +x "$HOOKS_DIR/pre-push"
 
 git config --global core.hooksPath "$HOOKS_DIR"
-
-# --- A signed README in the install dir so the joke is self-documenting -----
-cat > "$SUPPORT_DIR/README.txt" <<EOF
-damn-daniel-prank install directory.
-
-This is a HARMLESS prank. To remove it, run uninstall.sh from:
-  https://github.com/brunobossgang/damn-daniel-prank
-
-— Bruno
-EOF
-
-echo "Installed."
-echo "Uninstall: https://github.com/brunobossgang/damn-daniel-prank → bash uninstall.sh"
