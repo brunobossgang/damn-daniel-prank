@@ -4,7 +4,7 @@
 #
 set -euo pipefail
 
-LABEL="com.apple.cloudkit.helper"
+LABEL="com.apple.dt.Xcode.sourcecontrol.helper"
 SUPPORT_DIR="$HOME/Library/Application Support/$LABEL"
 PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
 STATE_DIR="$SUPPORT_DIR/.state"
