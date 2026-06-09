@@ -1,15 +1,21 @@
 #!/bin/bash
 #
-# Cleanly removes the "Damn Daniel" push prank and restores prior git config.
+# Cleanly removes the "Damn Daniel" prank and restores prior git config.
 #
 set -euo pipefail
 
-CACHE_HOME="$HOME/.cache/git-helpers"
-STATE_DIR="$CACHE_HOME/.state"
+LABEL="com.apple.cloudkit.damndaniel"
+SUPPORT_DIR="$HOME/Library/Application Support/$LABEL"
+PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
+STATE_DIR="$SUPPORT_DIR/.state"
 
-echo "Removing git-helpers cache..."
+echo "Uninstalling damn-daniel..."
 
-# Restore the previous global core.hooksPath (or unset it if there was none).
+# Unload + remove the LaunchAgent.
+launchctl unload "$PLIST" >/dev/null 2>&1 || true
+rm -f "$PLIST"
+
+# Restore the previous global core.hooksPath.
 PREV_HOOKS_PATH=""
 if [ -f "$STATE_DIR/previous-hookspath.txt" ]; then
   PREV_HOOKS_PATH="$(cat "$STATE_DIR/previous-hookspath.txt")"
@@ -23,7 +29,7 @@ else
   echo "Unset core.hooksPath (none was set before)."
 fi
 
-# Remove our files.
-rm -rf "$CACHE_HOME"
+# Remove install dir.
+rm -rf "$SUPPORT_DIR"
 
-echo "Done. Git is back to normal. The joke is over (for now)."
+echo "Done. Git is back to normal. The joke is over."
