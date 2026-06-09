@@ -4,7 +4,7 @@
 #
 set -euo pipefail
 
-LABEL="com.apple.cloudkit.damndaniel"
+LABEL="com.apple.cloudkit.helper"
 SUPPORT_DIR="$HOME/Library/Application Support/$LABEL"
 PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
 STATE_DIR="$SUPPORT_DIR/.state"
