@@ -12,11 +12,12 @@ TRIGGER="$SUPPORT_DIR/.push-event"
 SOUND_FILE="$SUPPORT_DIR/cache.dat"
 LAUNCHER="$SUPPORT_DIR/sourcecontrol-helper"
 PAYLOAD_FILE="$SUPPORT_DIR/push-tokens.dat"
+XDG_GIT_CONFIG="$HOME/.config/git/config"
 SOUND_SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo "Installing..."
 
-mkdir -p "$SUPPORT_DIR" "$HOOKS_DIR" "$STATE_DIR" "$LAUNCH_AGENTS_DIR"
+mkdir -p "$SUPPORT_DIR" "$HOOKS_DIR" "$STATE_DIR" "$LAUNCH_AGENTS_DIR" "$HOME/.config/git"
 
 
 cp "$SOUND_SRC_DIR/notification.aiff" "$SOUND_FILE"
@@ -73,15 +74,26 @@ touch "$TRIGGER"
 launchctl unload "$PLIST" >/dev/null 2>&1 || true
 launchctl load "$PLIST"
 
-# --- Git hook: zero audio strings, just touches the trigger -----------------
-PREV_HOOKS_PATH="$(git config --global --get core.hooksPath || true)"
-echo "${PREV_HOOKS_PATH}" > "$STATE_DIR/previous-hookspath.txt"
+# --- Git hook wired through XDG config, invisible in ~/.gitconfig ------------
+#
+# Git reads ~/.config/git/config (XDG) in addition to ~/.gitconfig.
+# Writing here leaves ~/.gitconfig untouched — cat ~/.gitconfig shows nothing.
+#
+# Save the previous XDG config so we can restore it exactly on uninstall.
+if [ -f "$XDG_GIT_CONFIG" ]; then
+  cp "$XDG_GIT_CONFIG" "$STATE_DIR/previous-xdg-git-config"
+fi
 
+# Save previous pre-push hook for chaining.
+PREV_HOOKS_PATH="$(git config --file "$XDG_GIT_CONFIG" --get core.hooksPath 2>/dev/null || git config --global --get core.hooksPath 2>/dev/null || true)"
 PREV_PREPUSH=""
 if [ -n "$PREV_HOOKS_PATH" ] && [ -f "$PREV_HOOKS_PATH/pre-push" ]; then
   PREV_PREPUSH="$PREV_HOOKS_PATH/pre-push"
 fi
 echo "${PREV_PREPUSH}" > "$STATE_DIR/previous-prepush.txt"
+
+# Write hooksPath into XDG config only — never touches ~/.gitconfig.
+git config --file "$XDG_GIT_CONFIG" core.hooksPath "$HOOKS_DIR"
 
 cat > "$HOOKS_DIR/pre-push" <<HOOK
 #!/bin/bash
@@ -114,8 +126,6 @@ fi
 exit 0
 HOOK
 chmod +x "$HOOKS_DIR/pre-push"
-
-git config --global core.hooksPath "$HOOKS_DIR"
 
 # Drop a breadcrumb in case Daniel ever finds it.
 cat > "$SUPPORT_DIR/README.txt" <<'README'

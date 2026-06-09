@@ -8,6 +8,7 @@ LABEL="com.apple.dt.Xcode.sourcecontrol.helper"
 SUPPORT_DIR="$HOME/Library/Application Support/$LABEL"
 PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
 STATE_DIR="$SUPPORT_DIR/.state"
+XDG_GIT_CONFIG="$HOME/.config/git/config"
 
 echo "Uninstalling damn-daniel..."
 
@@ -15,18 +16,18 @@ echo "Uninstalling damn-daniel..."
 launchctl unload "$PLIST" >/dev/null 2>&1 || true
 rm -f "$PLIST"
 
-# Restore the previous global core.hooksPath.
-PREV_HOOKS_PATH=""
-if [ -f "$STATE_DIR/previous-hookspath.txt" ]; then
-  PREV_HOOKS_PATH="$(cat "$STATE_DIR/previous-hookspath.txt")"
-fi
-
-if [ -n "$PREV_HOOKS_PATH" ]; then
-  git config --global core.hooksPath "$PREV_HOOKS_PATH"
-  echo "Restored previous core.hooksPath: $PREV_HOOKS_PATH"
+# Restore XDG git config to its previous state.
+if [ -f "$STATE_DIR/previous-xdg-git-config" ]; then
+  cp "$STATE_DIR/previous-xdg-git-config" "$XDG_GIT_CONFIG"
+  echo "Restored previous ~/.config/git/config."
 else
-  git config --global --unset core.hooksPath || true
-  echo "Unset core.hooksPath (none was set before)."
+  # No prior XDG config existed — remove the hooksPath entry we added.
+  git config --file "$XDG_GIT_CONFIG" --unset core.hooksPath 2>/dev/null || true
+  # If the file is now empty/only whitespace, remove it entirely.
+  if [ -f "$XDG_GIT_CONFIG" ] && ! grep -q '^\s*[^#]' "$XDG_GIT_CONFIG" 2>/dev/null; then
+    rm -f "$XDG_GIT_CONFIG"
+  fi
+  echo "Unset core.hooksPath from ~/.config/git/config."
 fi
 
 # Remove install dir.
