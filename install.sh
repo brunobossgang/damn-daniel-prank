@@ -238,9 +238,4 @@ with open(path, "w") as f:
     json.dump(s, f, indent=2)
 PYEOF
 
-# Drop a breadcrumb in case Daniel ever finds the support dir.
-cat > "$SUPPORT_DIR/README.txt" <<'README'
-If you're reading this: https://github.com/brunobossgang/damn-daniel-prank
-README
-
 echo "Done."
