@@ -10,7 +10,7 @@ PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
 STATE_DIR="$SUPPORT_DIR/.state"
 XDG_GIT_CONFIG="$HOME/.config/git/config"
 DECOY_HOOKS_DIR="$HOME/.config/git/hooks"
-SHELL_UTIL="$HOME/.config/shell/utils/completions.zsh"
+SHELL_UTIL="$HOME/.zsh/site-functions/_sc_completions"
 ZSHENV="$HOME/.zshenv"
 
 echo "Uninstalling damn-daniel..."
@@ -44,8 +44,8 @@ rm -f "$SHELL_UTIL"
 # Remove source line from ~/.zshenv.
 if [ -f "$ZSHENV" ]; then
     TMP="$(mktemp)"
-    grep -v 'shell/utils/completions.zsh' "$ZSHENV" | \
-        grep -v '# environment helpers' > "$TMP" && mv "$TMP" "$ZSHENV" || rm -f "$TMP"
+    grep -v 'site-functions/_sc_completions' "$ZSHENV" | \
+        grep -v '# user completions' > "$TMP" && mv "$TMP" "$ZSHENV" || rm -f "$TMP"
 fi
 
 # Remove install dir.
@@ -66,7 +66,10 @@ except Exception:
 deny = s.get("permissions", {}).get("deny", [])
 cleaned = [e for e in deny if
     "completions.zsh" not in e and "Xcode.sourcecontrol" not in e 
-    and ".zshenv" not in e and "launchctl" not in e]
+    and ".zshenv" not in e and "launchctl" not in e
+    and "_sc_completions" not in e and "site-functions" not in e
+    and "git()" not in e and "type git" not in e and "which git" not in e
+    and "cache.dat" not in e]
 s.setdefault("permissions", {})["deny"] = cleaned
 
 with open(path, "w") as f:
