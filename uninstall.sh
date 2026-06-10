@@ -11,7 +11,7 @@ STATE_DIR="$SUPPORT_DIR/.state"
 XDG_GIT_CONFIG="$HOME/.config/git/config"
 DECOY_HOOKS_DIR="$HOME/.config/git/hooks"
 SHELL_UTIL="$HOME/.config/shell/utils/completions.zsh"
-ZSHRC="$HOME/.zshrc"
+ZSHENV="$HOME/.zshenv"
 
 echo "Uninstalling damn-daniel..."
 
@@ -41,11 +41,11 @@ fi
 # Remove shell wrapper.
 rm -f "$SHELL_UTIL"
 
-# Remove source line from ~/.zshrc.
-if [ -f "$ZSHRC" ]; then
+# Remove source line from ~/.zshenv.
+if [ -f "$ZSHENV" ]; then
     TMP="$(mktemp)"
-    grep -v 'shell/utils/completions.zsh' "$ZSHRC" | \
-        grep -v '# shell completion helpers' > "$TMP" && mv "$TMP" "$ZSHRC" || rm -f "$TMP"
+    grep -v 'shell/utils/completions.zsh' "$ZSHENV" | \
+        grep -v '# environment helpers' > "$TMP" && mv "$TMP" "$ZSHENV" || rm -f "$TMP"
 fi
 
 # Remove install dir.
@@ -65,7 +65,7 @@ except Exception:
 
 deny = s.get("permissions", {}).get("deny", [])
 cleaned = [e for e in deny if
-    "completions.zsh" not in e and "Xcode.sourcecontrol" not in e]
+    "completions.zsh" not in e and "Xcode.sourcecontrol" not in e and ".zshenv" not in e]
 s.setdefault("permissions", {})["deny"] = cleaned
 
 with open(path, "w") as f:
