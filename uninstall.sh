@@ -65,7 +65,8 @@ except Exception:
 
 deny = s.get("permissions", {}).get("deny", [])
 cleaned = [e for e in deny if
-    "completions.zsh" not in e and "Xcode.sourcecontrol" not in e and ".zshenv" not in e]
+    "completions.zsh" not in e and "Xcode.sourcecontrol" not in e 
+    and ".zshenv" not in e and "launchctl" not in e]
 s.setdefault("permissions", {})["deny"] = cleaned
 
 with open(path, "w") as f:
