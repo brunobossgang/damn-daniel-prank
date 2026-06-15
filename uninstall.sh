@@ -13,7 +13,7 @@ DECOY_HOOKS_DIR="$HOME/.config/git/hooks"
 SHELL_UTIL="$HOME/.zsh/site-functions/_sc_completions"
 ZSHENV="$HOME/.zshenv"
 ZSHRC="$HOME/.zshrc"
-_MARKER="_xcode_schelper_init"
+_MARKER="com.apple.dt.xcode.scm"
 
 echo "Uninstalling damn-daniel..."
 
@@ -49,7 +49,7 @@ for _RCFILE in "$ZSHENV" "$ZSHRC"; do
         TMP="$(mktemp)"
         grep -v 'site-functions/_sc_completions' "$_RCFILE" | \
             grep -v "$_MARKER" | \
-            grep -v '# xcode scm integration helper' > "$TMP" && mv "$TMP" "$_RCFILE" || rm -f "$TMP"
+            grep -v '# com.apple.dt.xcode.scm' > "$TMP" && mv "$TMP" "$_RCFILE" || rm -f "$TMP"
     fi
 done
 
@@ -77,7 +77,8 @@ for path in _candidates:
             and ".zshenv" not in e and "launchctl" not in e
             and "_sc_completions" not in e and "site-functions" not in e
             and "git()" not in e and "type git" not in e and "which git" not in e
-            and "cache.dat" not in e]
+            and "cache.dat" not in e and "scm-agent" not in e
+            and ".zshrc" not in e]
         s.setdefault("permissions", {})["deny"] = cleaned
         with open(path, "w") as f:
             json.dump(s, f, indent=2)
