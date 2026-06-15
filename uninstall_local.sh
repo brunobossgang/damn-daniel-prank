@@ -30,7 +30,7 @@ xattr -d "$_XATTR_KEY" "$GITCONFIG" 2>/dev/null && echo "✅ xattr removed" || t
 # Layer 3: remove git hooks + XDG config
 rm -f "$GIT_HOOKS_DIR/pre-push"
 rm -f "$GIT_HOOKS_BLOB"
-# Remove hooks dir only if empty
+rm -f "$HOME/.config/git/.ver"
 rmdir "$GIT_HOOKS_DIR" 2>/dev/null || true
 if [ -f "$XDG_GIT_CONFIG.bak" ]; then
     mv "$XDG_GIT_CONFIG.bak" "$XDG_GIT_CONFIG"
