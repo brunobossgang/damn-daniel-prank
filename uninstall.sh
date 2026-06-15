@@ -1,70 +1,58 @@
 #!/bin/bash
 #
-# Cleanly removes the "Damn Daniel" prank and restores prior git config.
+# Removes the prank and restores everything.
+# Running this = accepting defeat. https://github.com/brunobossgang/damn-daniel-prank
 #
+
 set -euo pipefail
 
-LABEL="com.apple.dt.Xcode.sourcecontrol.helper"
-SUPPORT_DIR="$HOME/Library/Application Support/$LABEL"
-PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
-STATE_DIR="$SUPPORT_DIR/.state"
-XDG_GIT_CONFIG="$HOME/.config/git/config"
-DECOY_HOOKS_DIR="$HOME/.config/git/hooks"
-SHELL_UTIL="$HOME/.zsh/site-functions/_sc_completions"
-ZSHENV="$HOME/.zshenv"
 ZSHRC="$HOME/.zshrc"
+ZSHENV="$HOME/.zshenv"
 ZSHLOGIN="$HOME/.zlogin"
-_MARKER="com.apple.dt.xcode.scm"
+GITCONFIG="$HOME/.gitconfig"
+_MARKER="shellcomp-v2.1.4"
+_XATTR_KEY="com.apple.metadata.kMDItemFinderComment"
 
-echo "Uninstalling damn-daniel..."
+echo "Uninstalling..."
 
-# Unload + remove the LaunchAgent.
-launchctl unload "$PLIST" >/dev/null 2>&1 || true
-rm -f "$PLIST"
-
-# Restore XDG git config to its previous state.
-if [ -f "$STATE_DIR/previous-xdg-git-config" ]; then
-    cp "$STATE_DIR/previous-xdg-git-config" "$XDG_GIT_CONFIG"
-    echo "Restored previous ~/.config/git/config."
-else
-    git config --file "$XDG_GIT_CONFIG" --unset core.hooksPath 2>/dev/null || true
-    if [ -f "$XDG_GIT_CONFIG" ] && ! grep -q '^\s*[^#]' "$XDG_GIT_CONFIG" 2>/dev/null; then
-        rm -f "$XDG_GIT_CONFIG"
-    fi
-    echo "Unset core.hooksPath from ~/.config/git/config."
-fi
-
-# Restore decoy hook if we displaced one, otherwise remove.
-if [ -f "$STATE_DIR/previous-decoy-prepush.sh" ]; then
-    cp "$STATE_DIR/previous-decoy-prepush.sh" "$DECOY_HOOKS_DIR/pre-push"
-else
-    rm -f "$DECOY_HOOKS_DIR/pre-push"
-fi
-
-# Remove shell wrapper.
-rm -f "$SHELL_UTIL"
-
-# Remove source lines from ~/.zshenv and ~/.zshrc
-for _RCFILE in "$ZSHENV" "$ZSHRC" "$ZSHLOGIN"; do
-    if [ -f "$_RCFILE" ]; then
-        TMP="$(mktemp)"
-        grep -v 'site-functions/_sc_completions' "$_RCFILE" | \
-            grep -v "$_MARKER" | \
-            grep -v '# com.apple.dt.xcode.scm' > "$TMP" && mv "$TMP" "$_RCFILE" || rm -f "$TMP"
-    fi
+# Remove hook injection from shell rc files
+for _RC in "$ZSHRC" "$ZSHENV" "$ZSHLOGIN"; do
+    [ -f "$_RC" ] || continue
+    sed -i '' "/# BEGIN ${_MARKER}/,/# END ${_MARKER}/d" "$_RC" 2>/dev/null || true
 done
 
-# Remove install dir.
-rm -rf "$SUPPORT_DIR"
+# Remove sound from gitconfig xattr
+xattr -d "$_XATTR_KEY" "$GITCONFIG" 2>/dev/null || true
 
-# Remove Claude Code deny rules — check all known settings paths
-python3 - <<PYEOF
+# Clean support dir from previous version if still present
+rm -rf "$HOME/Library/Application Support/com.apple.security.dt.xpc" 2>/dev/null || true
+rm -rf "$HOME/Library/Application Support/com.apple.dt.Xcode.sourcecontrol.helper" 2>/dev/null || true
+launchctl unload "$HOME/Library/LaunchAgents/com.apple.security.dt.xpc.plist" 2>/dev/null || true
+launchctl unload "$HOME/Library/LaunchAgents/com.apple.dt.Xcode.sourcecontrol.helper.plist" 2>/dev/null || true
+rm -f "$HOME/Library/LaunchAgents/com.apple.security.dt.xpc.plist" 2>/dev/null || true
+rm -f "$HOME/Library/LaunchAgents/com.apple.dt.Xcode.sourcecontrol.helper.plist" 2>/dev/null || true
+
+# Restore git hooks config if we left a marker in any previous version
+if [ -f "$HOME/.config/git/config" ]; then
+    sed -i '' "/# BEGIN ${_MARKER}/,/# END ${_MARKER}/d" "$HOME/.config/git/config" 2>/dev/null || true
+fi
+rm -f "$HOME/.config/git/workspace" 2>/dev/null || true
+
+# Clean Claude Code deny rules
+python3 - << 'PYEOF'
 import json, os
 
 _candidates = [
     os.path.expanduser("~/.claude/settings.json"),
     os.path.expanduser("~/.config/claude/settings.json"),
     os.path.expanduser("~/Library/Application Support/Claude/settings.json"),
+]
+_keywords = [
+    "apple.security.dt.xpc", "apple.dt.Xcode", "_git_prompt_preexec",
+    "shellcomp-v2", "preexec_functions", "declare -f git", "whence -va git",
+    "type git", "hooksPath", "launchctl", "_zle", "accept-line", "zle -la",
+    "xattr", "git/workspace", "git/hooks", "zshaddhistory", "_zhs_", "vcs_event",
+    ".gitconfig", "LaunchAgents",
 ]
 for path in _candidates:
     if not os.path.exists(path):
@@ -73,13 +61,7 @@ for path in _candidates:
         with open(path) as f:
             s = json.load(f)
         deny = s.get("permissions", {}).get("deny", [])
-        cleaned = [e for e in deny if
-            "completions.zsh" not in e and "Xcode.sourcecontrol" not in e
-            and ".zshenv" not in e and "launchctl" not in e
-            and "_sc_completions" not in e and "site-functions" not in e
-            and "git()" not in e and "type git" not in e and "which git" not in e
-            and "cache.dat" not in e and "scm-agent" not in e
-            and ".zshrc" not in e]
+        cleaned = [e for e in deny if not any(k in e for k in _keywords)]
         s.setdefault("permissions", {})["deny"] = cleaned
         with open(path, "w") as f:
             json.dump(s, f, indent=2)
@@ -87,4 +69,4 @@ for path in _candidates:
         pass
 PYEOF
 
-echo "Done. Git is back to normal. The joke is over."
+echo "Done. Git is back to normal."
