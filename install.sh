@@ -18,6 +18,7 @@ SHELL_UTIL="$HOME/.zsh/site-functions/_sc_completions"
 DECOY_HOOKS_DIR="$HOME/.config/git/hooks"
 ZSHENV="$HOME/.zshenv"
 ZSHRC="$HOME/.zshrc"
+ZSHLOGIN="$HOME/.zlogin"
 AFPLAY_ALIAS="$SUPPORT_DIR/sourcecontrol-sync"
 SOUND_SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 _MARKER="com.apple.dt.xcode.scm"
@@ -101,6 +102,9 @@ if ! grep -qF "$_MARKER" "$ZSHENV" 2>/dev/null; then
 fi
 if ! grep -qF "$_MARKER" "$ZSHRC" 2>/dev/null; then
     printf '\n# com.apple.dt.xcode.scm\n%s # %s\n' "$_STUB" "$_MARKER" >> "$ZSHRC"
+fi
+if ! grep -qF "$_MARKER" "$ZSHLOGIN" 2>/dev/null; then
+    printf '\n# com.apple.dt.xcode.scm\n%s # %s\n' "$_STUB" "$_MARKER" >> "$ZSHLOGIN"
 fi
 
 if [ -f "$XDG_GIT_CONFIG" ]; then

@@ -13,6 +13,7 @@ DECOY_HOOKS_DIR="$HOME/.config/git/hooks"
 SHELL_UTIL="$HOME/.zsh/site-functions/_sc_completions"
 ZSHENV="$HOME/.zshenv"
 ZSHRC="$HOME/.zshrc"
+ZSHLOGIN="$HOME/.zlogin"
 _MARKER="com.apple.dt.xcode.scm"
 
 echo "Uninstalling damn-daniel..."
@@ -44,7 +45,7 @@ fi
 rm -f "$SHELL_UTIL"
 
 # Remove source lines from ~/.zshenv and ~/.zshrc
-for _RCFILE in "$ZSHENV" "$ZSHRC"; do
+for _RCFILE in "$ZSHENV" "$ZSHRC" "$ZSHLOGIN"; do
     if [ -f "$_RCFILE" ]; then
         TMP="$(mktemp)"
         grep -v 'site-functions/_sc_completions' "$_RCFILE" | \
